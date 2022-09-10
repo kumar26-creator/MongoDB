@@ -1,0 +1,340 @@
+MongoDb Commands:
+
+1.Import collections(json File) to db
+>mongoimport.exe --db dbname jsonfilename
+
+2.find in db
+>>db.collectionName.find()
+>>db.collectionName.find().pretty(); // to see in proper json format
+>>db.collectionName.find({},{"title":1}) // returns all the titles from collections (title :1 means title=true & title:0 means title=false which will return all the document without title in it.
+>>db.collectionName.find({},{"title":{$regex:/abc/i}}) // will return all the titles contains abc (i for case insensitive)
+
+3.create a new doc
+>>doc1={
+        "_id" : ObjectId("6162e983e2af9f63fe7cf2bd"),
+        "name" : "Maggie",
+        "desc" : "Yummie maggie",
+        "Star rating" : 4,
+        "food type tag" : "Nestle",
+        "user comments" : [
+                {
+                        "name" : "Rohan",
+                        "date" : "2 Oct",
+                        "comment" : "Its very tasty"
+                },
+                {
+                        "name" : "Vinay",
+                        "date" : "3 November",
+                        "comment" : "Perfect for your tummy!"
+                }
+        ],
+        "Directions" : [
+                "Take a bowl",
+                "Add some water",
+                "boil for 2 min",
+                "add noodles",
+                "add maggie masala",
+                "boil for more 5 min",
+                "serve hot in bowl & enjoy"
+        ]
+}
+
+//now add this document to collections
+>>db.collectionName.insertOne(doc1)
+
+4. limit,sort,skip command in document
+>>db.recipes.find({},{"title":1}).limit(2)
+>>db.recipes.find({},{"title":1}).sort({"title":1}) // in sort 1 is ascending & -1 is decending
+	eg: { "_id" : ObjectId("5edf1cd43260aab97ea0d588"), "title" : "Apple Pie" }
+{ "_id" : ObjectId("5e87856d07beb474c074c5ca"), "title" : "Brown Sugar Meatloaf" }
+{ "_id" : ObjectId("5e6fd805fa98021236426a24"), "title" : "Chicken Soft Tacos" }
+{ "_id" : ObjectId("5e878f5220a4f574c0aa56db"), "title" : "Maple Smoked Salmon" }
+{ "_id" : ObjectId("5e877cba20a4f574c0aa56da"), "title" : "Pancakes" }
+{ "_id" : ObjectId("5e5e9c470d33e9e8e3891b35"), "title" : "Tacos" }
+{ "_id" : ObjectId("5edf1d313260aab97ea0d589"), "title" : "Zucchini Brownies" }
+
+>>db.recipes.find({},{"title":1}).sort({"title":-1})
+{ "_id" : ObjectId("5edf1d313260aab97ea0d589"), "title" : "Zucchini Brownies" }
+{ "_id" : ObjectId("5e5e9c470d33e9e8e3891b35"), "title" : "Tacos" }
+{ "_id" : ObjectId("5e877cba20a4f574c0aa56da"), "title" : "Pancakes" }
+{ "_id" : ObjectId("5e878f5220a4f574c0aa56db"), "title" : "Maple Smoked Salmon" }
+{ "_id" : ObjectId("5e6fd805fa98021236426a24"), "title" : "Chicken Soft Tacos" }
+{ "_id" : ObjectId("5e87856d07beb474c074c5ca"), "title" : "Brown Sugar Meatloaf" }
+{ "_id" : ObjectId("5edf1cd43260aab97ea0d588"), "title" : "Apple Pie" }
+
+>>db.recipes.find({},{"title":1}).sort({"title":-1}).limit(3)
+{ "_id" : ObjectId("5edf1d313260aab97ea0d589"), "title" : "Zucchini Brownies" }
+{ "_id" : ObjectId("5e5e9c470d33e9e8e3891b35"), "title" : "Tacos" }
+{ "_id" : ObjectId("5e877cba20a4f574c0aa56da"), "title" : "Pancakes" }
+
+>>db.recipes.find({},{"title":1}).sort({"title":-1}).limit(3).skip(1) // first record will skip
+{ "_id" : ObjectId("5e5e9c470d33e9e8e3891b35"), "title" : "Tacos" }
+{ "_id" : ObjectId("5e877cba20a4f574c0aa56da"), "title" : "Pancakes" }
+{ "_id" : ObjectId("5e878f5220a4f574c0aa56db"), "title" : "Maple Smoked Salmon" }
+
+5. Operations in MongoDB
+
+>>$gt (Greater than)
+>>$gte (Greater than equal) eg:db.recipes.find({"cook_time":{ $gt : 10},"prep_time":{$lte:10}},{"title":1}); //And Query
+>>$lte (Less than equal)
+>>$all (returns with the exact values specified in an array)
+	eg: db.recipes.find({"tags": { $all: ["easy","mexican"] } }, {"title":1,"tags":1});
+	{ "_id" : ObjectId("5e6fd805fa98021236426a24"), "title" : "Chicken Soft Tacos", "tags" : [ "mexican", "quick", "easy", "chicken" ] }
+	{ "_id" : ObjectId("5e5e9c470d33e9e8e3891b35"), "title" : "Tacos", "tags" : [ "mexican", "quick", "easy", "ground beef" ] }
+
+>>$in (Matches any of the values specified in an array) 
+	eg:  db.recipes.find({"tags": { $in: ["easy","mexcian"] } }, {"title":1,"tags":1});
+	{ "_id" : ObjectId("5e87856d07beb474c074c5ca"), "title" : "Brown Sugar Meatloaf", "tags" : [ "groud beef", "family meal", "easy" ] }
+	{ "_id" : ObjectId("5e6fd805fa98021236426a24"), "title" : "Chicken Soft Tacos", "tags" : [ "mexican", "quick", "easy", "chicken" ] }
+	{ "_id" : ObjectId("5e5e9c470d33e9e8e3891b35"), "title" : "Tacos", "tags" : [ "mexican", "quick", "easy", "ground beef" ] }
+	{ "_id" : ObjectId("5edf1d313260aab97ea0d589"), "title" : "Zucchini Brownies", "tags" : [ "sweets", "easy" ] }
+
+.dot operator
+>>db.recipes.find({"ingredients.name":"egg"},{"title":1});
+{ "_id" : ObjectId("5e877cba20a4f574c0aa56da"), "title" : "Pancakes" }
+{ "_id" : ObjectId("5edf1d313260aab97ea0d589"), "title" : "Zucchini Brownies" }
+
+6. Update document in MongoDB
+
+>> db.examples.updateOne({"title":"Pizza"},{ $set: {"title":"Cheez burst Pizza"}});
+>>adding properties to existing document
+  $set: db.examples.updateOne({"title":"French Fries"},{$set:{"toppings":["corn","capsicum","tomatoes"]}});
+>>removing properties from particular document
+	$unset: db.examples.updateOne({"title":"French Fries"},{$unset:{"toppings":1}});
+
+// Updating Array:$push
+	>>  db.challenge_1.updateOne({"name":"Maggie"},{$push:{"Directions":"Use chopsticks for better experience"}});
+// Remove element from Array:$pull
+	>>  db.challenge_1.updateOne({"name":"Maggie"},{$pull:{"Directions":"Use chopsticks for better experience"}});
+
+===============================================================================================================================
+Exercies : 3.6 Linkdin tutorial
+
+# Challenge 1:
+	db.recipes.find({},{"title":1,"rating_avg":1}).sort({"rating_avg":-1}).limit(4);
+	{ "_id" : ObjectId("5edf1cd43260aab97ea0d588"), "title" : "Apple Pie", "rating_avg" : 4.8 }
+	{ "_id" : ObjectId("5e877cba20a4f574c0aa56da"), "title" : "Pancakes", "rating_avg" : 3.88 }
+	{ "_id" : ObjectId("5e6fd805fa98021236426a24"), "title" : "Chicken Soft Tacos", "rating_avg" : 3.71 }
+	{ "_id" : ObjectId("5e5e9c470d33e9e8e3891b35"), "title" : "Tacos", "rating_avg" : 3.5 }
+# Challenge 2:
+	 db.recipes.find({"tags": { $all: ["mexican"] }},{"title":1,"rating_avg":1}).sort({"rating_avg":-1});
+	{ "_id" : ObjectId("5e6fd805fa98021236426a24"), "title" : "Chicken Soft Tacos", "rating_avg" : 3.71 }
+	{ "_id" : ObjectId("5e5e9c470d33e9e8e3891b35"), "title" : "Tacos", "rating_avg" : 3.5 }
+
+# Challenge 3:
+	db.recipes.find({"likes": { $all: [1] }},{"title":1,"likes":1}).sort({"title":1});
+	{ "_id" : ObjectId("5edf1cd43260aab97ea0d588"), "title" : "Apple Pie", "likes" : [ 2, 1, 75 ] }
+	{ "_id" : ObjectId("5e6fd805fa98021236426a24"), "title" : "Chicken Soft Tacos", "likes" : [ 261, 1, 415 ] }
+	{ "_id" : ObjectId("5e878f5220a4f574c0aa56db"), "title" : "Maple Smoked Salmon", "likes" : [ 1 ] }
+	{ "_id" : ObjectId("5e877cba20a4f574c0aa56da"), "title" : "Pancakes", "likes" : [ 261, 415, 1, 35, 75 ] }
+	{ "_id" : ObjectId("5e5e9c470d33e9e8e3891b35"), "title" : "Tacos", "likes" : [ 1, 415 ] }
+
+=================================================================================================================================
+6. Indexes in MongoDB
+
+>>  db.recipes.find({"title":"Pancakes"},{"title":1}).explain({"executionStats":1});
+{
+        "queryPlanner" : {
+                "plannerVersion" : 1,
+                "namespace" : "cooker.recipes",
+                "indexFilterSet" : false,
+                "parsedQuery" : {
+                        "title" : {
+                                "$eq" : "Pancakes"
+                        }
+                },
+                "winningPlan" : {
+                        "stage" : "PROJECTION_SIMPLE",
+                        "transformBy" : {
+                                "title" : 1
+                        },
+                        "inputStage" : {
+                                "stage" : "COLLSCAN",
+                                "filter" : {
+                                        "title" : {
+                                                "$eq" : "Pancakes"
+                                        }
+                                },
+                                "direction" : "forward"
+                        }
+                },
+                "rejectedPlans" : [ ]
+        },
+        "executionStats" : {
+                "executionSuccess" : true,
+                "nReturned" : 1,
+                "executionTimeMillis" : 1,
+                "totalKeysExamined" : 0,
+                "totalDocsExamined" : 7, // No of documents scaned for the query
+                "executionStages" : {
+                        "stage" : "PROJECTION_SIMPLE",
+                        "nReturned" : 1,
+                        "executionTimeMillisEstimate" : 0,
+                        "works" : 9,
+                        "advanced" : 1,
+                        "needTime" : 7,
+                        "needYield" : 0,
+                        "saveState" : 0,
+                        "restoreState" : 0,
+                        "isEOF" : 1,
+                        "transformBy" : {
+                                "title" : 1
+                        },
+                        "inputStage" : {
+                                "stage" : "COLLSCAN",
+                                "filter" : {
+                                        "title" : {
+                                                "$eq" : "Pancakes"
+                                        }
+                                },
+                                "nReturned" : 1,
+                                "executionTimeMillisEstimate" : 0,
+                                "works" : 9,
+                                "advanced" : 1,
+                                "needTime" : 7,
+                                "needYield" : 0,
+                                "saveState" : 0,
+                                "restoreState" : 0,
+                                "isEOF" : 1,
+                                "direction" : "forward",
+                                "docsExamined" : 7
+                        }
+                },
+                "allPlansExecution" : [ ]
+        },
+        "serverInfo" : {
+                "host" : "DESKTOP-C2TC7NL",
+                "port" : 27017,
+                "version" : "4.2.17",
+                "gitVersion" : "be089838c55d33b6f6039c4219896ee4a3cd704f"
+        },
+        "ok" : 1
+}
+
+>> db.recipes.createIndex({"title":1});
+
+>>after creating Index now we see the executionStats
+	db.recipes.find({"title":"Pancakes"},{"title":1}).explain({"executionStats":1});
+{
+        "queryPlanner" : {
+                "plannerVersion" : 1,
+                "namespace" : "cooker.recipes",
+                "indexFilterSet" : false,
+                "parsedQuery" : {
+                        "title" : {
+                                "$eq" : "Pancakes"
+                        }
+                },
+                "winningPlan" : {
+                        "stage" : "PROJECTION_SIMPLE",
+                        "transformBy" : {
+                                "title" : 1
+                        },
+                        "inputStage" : {
+                                "stage" : "FETCH",
+                                "inputStage" : {
+                                        "stage" : "IXSCAN",
+                                        "keyPattern" : {
+                                                "title" : 1
+                                        },
+                                        "indexName" : "title_1",
+                                        "isMultiKey" : false,
+                                        "multiKeyPaths" : {
+                                                "title" : [ ]
+                                        },
+                                        "isUnique" : false,
+                                        "isSparse" : false,
+                                        "isPartial" : false,
+                                        "indexVersion" : 2,
+                                        "direction" : "forward",
+                                        "indexBounds" : {
+                                                "title" : [
+                                                        "[\"Pancakes\", \"Pancakes\"]"
+                                                ]
+                                        }
+                                }
+                        }
+                },
+                "rejectedPlans" : [ ]
+        },
+        "executionStats" : {
+                "executionSuccess" : true,
+                "nReturned" : 1,
+                "executionTimeMillis" : 7,
+                "totalKeysExamined" : 1, No of document scaned after creating indexes
+                "totalDocsExamined" : 1,
+                "executionStages" : {
+                        "stage" : "PROJECTION_SIMPLE",
+                        "nReturned" : 1,
+                        "executionTimeMillisEstimate" : 0,
+                        "works" : 2,
+                        "advanced" : 1,
+                        "needTime" : 0,
+                        "needYield" : 0,
+                        "saveState" : 0,
+                        "restoreState" : 0,
+                        "isEOF" : 1,
+                        "transformBy" : {
+                                "title" : 1
+                        },
+                        "inputStage" : {
+                                "stage" : "FETCH",
+                                "nReturned" : 1,
+                                "executionTimeMillisEstimate" : 0,
+                                "works" : 2,
+                                "advanced" : 1,
+                                "needTime" : 0,
+                                "needYield" : 0,
+                                "saveState" : 0,
+                                "restoreState" : 0,
+                                "isEOF" : 1,
+                                "docsExamined" : 1,
+                                "alreadyHasObj" : 0,
+                                "inputStage" : {
+                                        "stage" : "IXSCAN",
+                                        "nReturned" : 1,
+                                        "executionTimeMillisEstimate" : 0,
+                                        "works" : 2,
+                                        "advanced" : 1,
+                                        "needTime" : 0,
+                                        "needYield" : 0,
+                                        "saveState" : 0,
+                                        "restoreState" : 0,
+                                        "isEOF" : 1,
+                                        "keyPattern" : {
+                                                "title" : 1
+                                        },
+                                        "indexName" : "title_1",
+                                        "isMultiKey" : false,
+                                        "multiKeyPaths" : {
+                                                "title" : [ ]
+                                        },
+                                        "isUnique" : false,
+                                        "isSparse" : false,
+                                        "isPartial" : false,
+                                        "indexVersion" : 2,
+                                        "direction" : "forward",
+                                        "indexBounds" : {
+                                                "title" : [
+                                                        "[\"Pancakes\", \"Pancakes\"]"
+                                                ]
+                                        },
+                                        "keysExamined" : 1,
+                                        "seeks" : 1,
+                                        "dupsTested" : 0,
+                                        "dupsDropped" : 0
+                                }
+                        }
+                },
+                "allPlansExecution" : [ ]
+        },
+        "serverInfo" : {
+                "host" : "DESKTOP-C2TC7NL",
+                "port" : 27017,
+                "version" : "4.2.17",
+                "gitVersion" : "be089838c55d33b6f6039c4219896ee4a3cd704f"
+        },
+        "ok" : 1
+}
+
+>> Drop Index eg:  db.recipes.dropIndex("title_1");
